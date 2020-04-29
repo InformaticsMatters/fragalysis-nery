@@ -1,0 +1,35 @@
+---
+version: 1
+disable_existing_loggers: false
+formatters:
+  simple:
+    format: >-
+      %(asctime)s.%(msecs)03dZ
+      %(name)s
+      %(process)d
+      %(levelname)s
+      #
+      %(message)s
+    datefmt: '%Y-%m-%dT%H:%M:%S'
+handlers:
+  console:
+    class: logging.StreamHandler
+    formatter: simple
+    stream: ext://sys.stdout
+loggers:
+  werkzeug:
+    level: WARNING
+    propagae: yes
+  botocore:
+    level: WARNING
+    propagae: yes
+  urllib3:
+    level: WARNING
+    propagae: yes
+  boto3:
+    level: WARNING
+    propagae: yes
+
+root:
+  level: INFO
+  handlers: [console]
