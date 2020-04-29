@@ -20,7 +20,8 @@ RUN adduser -D -h ${APP_ROOT} -s /bin/sh nery && \
     apk add --no-cache openssl-dev libffi-dev build-base
 
 COPY requirements.txt ${APP_ROOT}/
-RUN pip install -r ${APP_ROOT}/requirements.txt
+RUN /usr/local/bin/python -m pip install --upgrade pip && \
+    pip install -r ${APP_ROOT}/requirements.txt
 
 COPY nery.py ${APP_ROOT}/
 COPY logging.yaml ${APP_ROOT}/
