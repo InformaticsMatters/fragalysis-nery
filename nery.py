@@ -19,7 +19,7 @@ APP.logger.disabled = True
 _LOGGER = logging.getLogger('nery')
 
 _DUMP_MESSAGES = os.environ.get('DUMP_MESSAGES', 'no')
-_NEO4J_URL = os.environ.get('NEO4J_URL', 'neo4j')
+_NEO4J_QUERY = os.environ.get('NEO4J_QUERY', 'neo4j')
 _NEO4J_AUTH = os.environ.get('NEO4J_AUTH', 'neo4j/neo4j')
 
 
@@ -221,12 +221,12 @@ def _get_driver():
     authentication is assumed.
     :return: the driver for the graph database
     """
-    _LOGGER.info('Getting driver for %s (%s)...', _NEO4J_URL, _NEO4J_AUTH)
+    _LOGGER.info('Getting driver for %s (%s)...', _NEO4J_QUERY, _NEO4J_AUTH)
     auth_parts = _NEO4J_AUTH.split('/')
     if len(auth_parts) == 2:
-        driver = GraphDatabase.driver('bolt://' + _NEO4J_URL + ':7687',
+        driver = GraphDatabase.driver('bolt://' + _NEO4J_QUERY + ':7687',
                                       auth=(auth_parts[0], auth_parts[1]))
     else:
-        driver = GraphDatabase.driver('bolt://' + _NEO4J_URL + ':7687')
+        driver = GraphDatabase.driver('bolt://' + _NEO4J_QUERY + ':7687')
 
     return driver
