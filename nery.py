@@ -45,47 +45,6 @@ class ReturnObject(object):
         return "_".join(out_list)
 
 
-@APP.route('/get-picks', methods=['GET'])
-def get_picks():
-    """Expects 'canon_smiles' (stting) and 'num_picks' (int) values in the
-    JSON block.
-    """
-
-    if not request.json:
-        # Bad request
-        abort(400)
-    elif _DUMP_MESSAGES.lower() in ['yes']:
-        _dump_message(request)
-
-    data = request.get_json()
-    smiles = data.get('canon_smiles', '')
-    num_picks = data.get('num_picks', 0)
-
-    _LOGGER.info("smiles='%s' num_picks=%s", smiles, num_picks)
-    if not smiles or num_picks < 1:
-        _LOGGER.error('Invalid data')
-        abort(400)
-
-    driver = _get_driver()
-    records = []
-    with driver.session() as session:
-        for record in session.read_transaction(_find_proximal, smiles):
-            ans = _define_proximal_type(record)
-            records.append(ans)
-        for record in session.read_transaction(_find_double_edge, smiles):
-            ans = _define_double_edge_type(record)
-            records.append(ans)
-        for label in list(set([x.label for x in records])):
-            # Linkers are meaningless
-            if "." in label:
-                continue
-
-    if records:
-        return _organise(records, num_picks)
-    else:
-        _LOGGER.warning("Nothing found for input: %s", smiles)
-
-
 @APP.route('/get-full-graph', methods=['GET'])
 def get_full_graph():
     """Expects 'canon_smiles' (string) value in the JSON block.
@@ -120,38 +79,10 @@ def get_full_graph():
                 continue
 
     if records:
+        _LOGGER.info("len(records)=%s", len(records))
         return _organise(records, None)
     else:
         _LOGGER.warning("Nothing found for input: %s", smiles)
-
-
-@APP.route('/custom-query', methods=['GET'])
-def custom_query():
-    """Expects 'query' (string) value in the JSON block.
-    """
-
-    if not request.json:
-        # Bad request
-        abort(400)
-    elif _DUMP_MESSAGES.lower() in ['yes']:
-        _dump_message(request)
-
-    data = request.get_json()
-    query = data.get('query', '')
-
-    _LOGGER.info("query=%s", query)
-
-    if not query:
-        _LOGGER.error('Empty query')
-        abort(400)
-
-    driver = _get_driver()
-    records = []
-    with driver.session() as session:
-        for record in session.read_transaction(_find_custom, query):
-            records.append(record)
-
-    return records
 
 
 def _find_proximal(tx, input_str):
@@ -173,11 +104,6 @@ def _find_double_edge(tx, input_str):
         "return sta, nm, mid, ne, end "
         "order by split(nm.label, '|')[4], split(ne.label, '|')[2];",
         smiles=input_str)
-
-
-def _find_custom(tx, input_str):
-
-    return tx.run(input_str)
 
 
 def _define_proximal_type(record):
